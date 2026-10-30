@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+{% block title %}新增活動{% endblock %}
+{% block content %}
+<h1>新增活動</h1>
+{% if errors %}
+<div class="err"><ul>{% for e in errors %}<li>{{ e }}</li>{% endfor %}</ul></div>
+{% endif %}
+<form method="post" action="/activities" novalidate>
+  <label for="title">活動名稱 *</label>
+  <input type="text" id="title" name="title" maxlength="100" value="{{ form.get('title', '') }}">
+
+  <label for="description">活動說明</label>
+  <textarea id="description" name="description" rows="4">{{ form.get('description', '') }}</textarea>
+
+  <label for="event_date">活動日期 *</label>
+  <input type="datetime-local" id="event_date" name="event_date" value="{{ form.get('event_date', '') }}">
+
+  <label for="registration_deadline">報名截止時間 *</label>
+  <input type="datetime-local" id="registration_deadline" name="registration_deadline" value="{{ form.get('registration_deadline', '') }}">
+
+  <button type="submit">送出</button>
+  <a href="/activities">返回活動清單</a>
+</form>
+{% endblock %}

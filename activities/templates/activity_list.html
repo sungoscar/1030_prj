@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+{% block title %}活動清單{% endblock %}
+{% block content %}
+<h1>活動清單</h1>
+{% if created_title %}
+<div class="msg">已新增活動：{{ created_title }}</div>
+{% endif %}
+<p><a class="btn" href="/activities/new">＋ 新增活動</a></p>
+{% if not activities %}
+<p>目前還沒有任何活動。</p>
+{% else %}
+<table>
+  <tr>
+    <th>活動名稱</th><th>活動日期</th><th>報名截止時間</th><th>狀態</th><th>操作</th>
+  </tr>
+  {% for a in activities %}
+  <tr>
+    <td>{{ a.title }}{% if a.description %}<br><small>{{ a.description }}</small>{% endif %}</td>
+    <td>{{ a.event_date.strftime("%Y-%m-%d %H:%M") }}</td>
+    <td>{{ a.registration_deadline.strftime("%Y-%m-%d %H:%M") }}</td>
+    <td>{% if a.is_open %}<span class="ok">可報名</span>{% else %}<span class="closed">已截止</span>{% endif %}</td>
+    <td>
+      {% if a.is_open %}<a href="/activities/{{ a.id }}/register">我要報名</a> | {% endif %}
+      <a href="/activities/{{ a.id }}/registrations">查看報名清單</a>
+    </td>
+  </tr>
+  {% endfor %}
+</table>
+{% endif %}
+{% endblock %}
