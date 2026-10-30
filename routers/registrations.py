@@ -1,16 +1,12 @@
-from pathlib import Path
-
 import psycopg
 from fastapi import APIRouter, Depends, HTTPException, Request
 from fastapi.responses import HTMLResponse
-from fastapi.templating import Jinja2Templates
 
 from db import get_connection
+from templating import templates
 
 
 router = APIRouter(tags=["活動報名清單"])
-# 使用絕對路徑，避免從不同目錄啟動時找不到模板。
-templates = Jinja2Templates(directory=str(Path(__file__).resolve().parents[1] / "templates"))
 
 
 @router.get("/activities/{activity_id}/registrations", response_class=HTMLResponse)

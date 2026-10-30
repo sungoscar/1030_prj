@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% block title %}活動報名平台{% endblock %}</title>
+  <style>
+    body { font-family: -apple-system, "PingFang TC", "Noto Sans TC", sans-serif; max-width: 860px; margin: 2rem auto; padding: 0 1rem; color: #222; }
+    table { border-collapse: collapse; width: 100%; min-width: 480px; }
+    th, td { border: 1px solid #ccc; padding: .5rem .7rem; text-align: left; }
+    th { background: #f3f3f3; white-space: nowrap; }
+    .ok { color: #0a7d2c; font-weight: 600; }
+    .closed { color: #b00020; font-weight: 600; }
+    .msg { background: #e8f6ec; border: 1px solid #0a7d2c; padding: .6rem 1rem; margin-bottom: 1rem; }
+    .err { background: #fdecea; border: 1px solid #b00020; padding: .6rem 1rem; margin-bottom: 1rem; }
+    label { display: block; margin-top: 1rem; font-weight: 600; }
+    input[type=text], input[type=datetime-local], textarea { width: 100%; box-sizing: border-box; padding: .4rem; font-size: 1rem; }
+    button { margin-top: 1.2rem; padding: .5rem 1.4rem; font-size: 1rem; }
+    .btn { display: inline-block; padding: .4rem .9rem; background: #1f6feb; color: #fff; text-decoration: none; border-radius: 4px; }
+    nav { display: flex; gap: 1rem; flex-wrap: wrap; padding-bottom: 1rem; border-bottom: 1px solid #ddd; }
+    h1 { overflow-wrap: anywhere; }
+    .table-wrap { overflow-x: auto; }
+    .activity-table { min-width: 800px; }
+    .activity-table td:not(:first-child) { white-space: nowrap; }
+    .count { display: inline-block; padding: .6rem 1rem; background: #e2edff; color: #163d77; border-radius: 6px; }
+    .empty { padding: 2rem; text-align: center; color: #52657e; }
+    .muted { color: #59636e; }
+    .phone { white-space: nowrap; }
+    caption { padding: .7rem; text-align: left; font-weight: 600; }
+    tbody tr:nth-child(even) { background: #f8fafd; }
+    a { color: #1756a3; }
+  </style>
+</head>
+<body>
+<nav aria-label="主要導覽">
+  {% if activities_url %}<a href="{{ activities_url }}">活動清單</a>{% endif %}
+  {% if new_activity_url %}<a href="{{ new_activity_url }}">新增活動</a>{% endif %}
+</nav>
+<main>
+{% block content %}{% endblock %}
+</main>
+</body>
+</html>
