@@ -1,7 +1,7 @@
-# Hackthon：活動管理與報名清單
+# Hackthon：活動管理、活動報名與報名清單
 
-整合 UI 組員的活動新增、活動清單，以及既有的活動報名清單，使用同一個 FastAPI app。
-**填寫活動報名資料的第二項模組尚未接入**；活動清單會顯示「報名功能尚未接入」，沒有導向不存在的報名頁。
+整合三位組員的活動新增、活動清單、活動報名與報名清單，使用同一個 FastAPI app。
+活動清單中的開放活動可按「我要報名」，填寫姓名與電話，成功後可查看原有報名清單與人數。
 沿用 `database/schema.sql` 的 `activities(id, title, ...)` 與
 `registrations(id, activity_id, name, phone, ...)`，沒有修改共用資料表。
 
@@ -38,18 +38,26 @@ Copy-Item .env.example .env
 | `GET /activities` | 活動清單、報名截止狀態與查看報名清單連結 |
 | `GET /activities/new` | 新增活動表單 |
 | `POST /activities` | 驗證並新增活動，成功後以 303 導向清單 |
+| `GET /activities/{activity_id}/register` | 報名表單；截止活動顯示提示並隱藏表單 |
+| `POST /activities/{activity_id}/register` | 驗證並寫入姓名、電話，成功顯示報名成功與清單連結 |
 | `GET /activities/{activity_id}/registrations` | 活動報名者、電話與總人數 |
+
+報名姓名最多 50 字，電話最多 20 字，兩者皆必填並去除前後空白。
+同一活動同名同電話由既有 UNIQUE 約束拒絕，回傳 409；其他欄位錯誤或報名截止回傳 400，活動不存在回傳 404。
+報名送出時於 INSERT 再次檢查截止時間，開啟表單後才截止仍無法寫入。
 
 ## 與組員整合
 
-- `activities/router.py` 與 `routers/registrations.py` 都是獨立 `APIRouter`，`main.py` 掛載兩者。
+- 三個功能各自提供獨立 `APIRouter`，`main.py` 掛載三者。
   若組員已有主程式，保留其 app 與功能，只加入：
 
   ```python
   from activities.router import router as activities_router
+  from routers.registration_form import router as registration_form_router
   from routers.registrations import router as registrations_router
 
   app.include_router(activities_router)
+  app.include_router(registration_form_router)
   app.include_router(registrations_router)
   ```
 
@@ -60,7 +68,7 @@ Copy-Item .env.example .env
   ```
 
 - 活動新增沿用 UI 組員的欄位、日期解析、名稱長度與截止時間驗證；資料採參數化 SQL 寫入。
-- 活動報名清單保留原路由；未新增報名寫入 API，待負責第二項功能的組員提供 Router 後接入。
+- 活動報名清單保留原路由；報名功能共用 `db.py`、`DATABASE_URL`、psycopg 3 與 `templating.py`。
 - `db.py` 提供共用 `get_connection` dependency，回傳採用 `dict_row` 的 psycopg 連線。
   活動管理已改接此 dependency，不再使用 psycopg2 或 `DB_HOST/DB_NAME/DB_USER/DB_PASSWORD`。
 - `templating.py` 統一以絕對路徑載入模板；`templates/base.html` 提供共用樣式與導覽。
@@ -78,7 +86,7 @@ Copy-Item .env.example .env
 ```
 
 一般測試使用替代連線驗證 HTML、統計、空清單、404、輸入驗證、HTML 跳脫、模板路徑與連線錯誤處理。
-沒有 `TEST_DATABASE_URL` 時，9 項 PostgreSQL 整合測試會明確標記為 skipped，不能視為真實資料庫測試通過。
+沒有 `TEST_DATABASE_URL` 時，18 項 PostgreSQL 整合測試會明確標記為 skipped，不能視為真實資料庫測試通過。
 
 如有可用的 PostgreSQL 測試連線，可於目前的 PowerShell session 設定後執行：
 
@@ -93,17 +101,21 @@ Remove-Item Env:TEST_DATABASE_URL
 不會刪除、重建或讀寫現有的正式資料表。測試帳號需具備連線與建立暫存表權限。
 整合測試驗證活動新增與日期儲存、成功訊息、HTML 跳脫、開放與截止狀態、所有清單連結、
 跨模組導覽、不同活動的報名資料隔離、人數、空活動及不存在活動。
+報名測試另驗證欄位限制、重複 409、截止後拒絕寫入、表單開啟後才截止、同名同電話可參加不同活動，
+以及報名成功後立即出現在原有清單中。
 UI 原先的匯入即執行測試已改為 pytest fixture，匯入測試檔案不會新增或刪除資料。
 
 ## 本次實際驗證（2026-10-30）
 
 - Python 3.14.8、PostgreSQL 17.10；測試資料只寫入隔離 PostgreSQL 實例，pytest 使用連線專屬 TEMP 表。
-- 整合 `origin/feature/ui`（`45f7391`）後：**36 passed**，包含既有 15 項與新增 21 項 UI/整合測試；
-  其中 9 項使用真實 PostgreSQL 暫存表。
+- 在 `integration-registration` 整合 `origin/feature/sql`（`1dffc78`）後：**60 passed**，
+  包含既有 36 項與新增 24 項報名測試，其中 18 項使用真實 PostgreSQL 暫存表。
 - `pip check` 通過，套件相依性無衝突。
 - 實際啟動 Uvicorn，透過 HTTP 驗證首頁導向、活動表單、新增後的 303 導向、成功訊息、
   使用另一條資料庫連線確認新增資料已提交，以及 2/1/0 人清單與 404。
 - `hackathon` 僅做唯讀頁面檢查，整合測試前後的活動與報名筆數相同；沒有向該資料庫加入假資料。
+- 真實 HTTP 報名流程亦已在隔離示範服務驗證：成功 200、重複 409、截止 400、找不到活動 404，
+  使用另一條 PostgreSQL 連線及原有報名清單確認報名資料已提交。
 - 已在瀏覽器檢視活動清單、新增表單、報名清單及共用導覽；窄視窗的表格採水平捲動。
 - 套件的 TestClient 目前有一項 httpx 棄用警告，不影響本次測試結果。
-- 第二項「活動報名」尚無 Router 可整合，新增報名與截止後禁止報名的完整流程仍待該模組提供。
+- Commit 比較、六項衝突處理與舊 SQL 欄位差異記錄於 [報名整合說明](docs/registration-integration.md)。

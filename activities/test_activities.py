@@ -194,7 +194,9 @@ def test_postgres_open_closed_status_and_all_page_links(postgres_ui_client):
     closed_id = create_activity(client, title="測試-已截止", registration_deadline="2000-01-01T00:00")
     response = client.get("/activities")
     assert "可報名" in response.text and "已截止" in response.text
-    assert response.text.count("報名功能尚未接入") == 1
+    assert "報名功能尚未接入" not in response.text
+    assert f"/activities/{open_id}/register" in response.text
+    assert f"/activities/{closed_id}/register" not in response.text
     assert f"/activities/{open_id}/registrations" in response.text
     assert f"/activities/{closed_id}/registrations" in response.text
     for link in set(re.findall(r'href="([^"]+)"', response.text)):

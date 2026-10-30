@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+{% block title %}活動報名{% if activity %}｜{{ activity.title }}{% endif %}{% endblock %}
+{% block content %}
+{% if activity %}
+  <h1>{{ activity.title }}</h1>
+  <p>{{ activity.description or "歡迎報名參加本活動！" }}</p>
+  <p>活動時間：{{ activity.event_date.strftime('%Y-%m-%d %H:%M') }}</p>
+  <p>報名截止時間：{{ activity.registration_deadline.strftime('%Y-%m-%d %H:%M') }}</p>
+  {% if error %}<div class="err" role="alert">{{ error }}</div>{% endif %}
+  {% if success %}
+    <div class="msg" role="status">{{ success }}</div>
+    <p><a href="{{ request.url_for('registration_list', activity_id=activity.id) }}">查看報名清單</a></p>
+  {% elif activity.is_open %}
+    <form method="post" action="{{ request.url_for('submit_registration', activity_id=activity.id) }}">
+      <label for="name">報名者姓名</label>
+      <input type="text" id="name" name="name" maxlength="50" value="{{ name or '' }}" placeholder="請輸入姓名" required>
+      <label for="phone">聯絡電話</label>
+      <input type="tel" id="phone" name="phone" maxlength="20" value="{{ phone or '' }}" placeholder="請輸入聯絡電話" autocomplete="tel" required>
+      <button type="submit">送出報名</button>
+    </form>
+  {% endif %}
+{% else %}
+  <h1>無法報名</h1>
+  {% if error %}<div class="err" role="alert">{{ error }}</div>{% endif %}
+{% endif %}
+{% endblock %}

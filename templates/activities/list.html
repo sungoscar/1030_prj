@@ -23,7 +23,7 @@
     <td>{{ a.registration_deadline.strftime("%Y-%m-%d %H:%M") }}</td>
     <td>{% if a.is_open %}<span class="ok">可報名</span>{% else %}<span class="closed">已截止</span>{% endif %}</td>
     <td>
-      {% if a.is_open %}<span class="muted">報名功能尚未接入</span><br>{% endif %}
+      {% if a.is_open %}<a href="{{ request.url_for('show_registration_form', activity_id=a.id) }}">我要報名</a><br>{% endif %}
       <a href="{{ request.url_for('registration_list', activity_id=a.id) }}">查看報名清單</a>
     </td>
   </tr>
